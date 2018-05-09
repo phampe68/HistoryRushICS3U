@@ -2,9 +2,9 @@
 	//import code
 	import flash.display.MovieClip;
 	public class Tower extends MovieClip{
-		var towerCost:int = 10; //point where enemy turns
-		var reloadTime:int = 5;
-		var range:int = 800;
+		var cost:int = 10; //point where enemy turns
+		var reloadTime:int = 1;
+		var range:int = 200;
 		
 		public function Tower(){
 			
