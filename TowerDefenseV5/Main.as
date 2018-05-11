@@ -254,6 +254,7 @@
 				currTower.x = currTile.x + currTile.width /2;
 				currTower.y = currTile.y + currTile.width /2;
 				towers.push(currTower); 
+				
 				currTower = null;
 			}
 		}
@@ -287,6 +288,7 @@
 						addChild(tmpBullet); //add a bullet to the stage
 						bullets.push(tmpBullet); //add a bullet to the array of bullets
 						tmpTower.reloadTime = 5; // reset the reload time
+						tmpTower.rotation = angle / Math.PI * 180;
 						break; 
 					}	
 				}
