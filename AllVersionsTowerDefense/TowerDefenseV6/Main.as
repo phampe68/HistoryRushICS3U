@@ -15,15 +15,16 @@
 		//declare constants
 		const enemyStartX:int = 78;
 		const enemyStartY:int = 23;
-
+		
 		//declare variables
-		var numberEnemies:int = 15;//number of enemies in level
-		var moveSpeed:int = 5; //how fast the enemies go (NOTE 5 IS THE MAX SPEED)
+		var numberEnemies:int = 50;//number of enemies in level
+		var moveSpeed:int = 3  ; //how fast the enemies go (NOTE 5 IS THE MAX SPEED)
 		var currentGold:int = 100;//how much gold you have
 		var isDragging:Boolean = false; //true when object is being dragged (not yet dropped)
 		var currTile: Tile1; //current tile
 		var currTower: Tower; //current tower
-		var currGold: int; //current gold
+		var currGold: int = 10000; //current gold
+		var numWave: int = 0 //which wave of enemies
 
 		//declare arrays
 		var level:Array = new Array();//2D array for tiles on the map
@@ -32,16 +33,17 @@
 		var wayPointsY:Array = new Array();//points on the path where the enemies turn
 		var nonPlaceableTiles = new Array(); //where towers cannot be placed
 		var towers = new Array(); //array of placed towers
+		var bullets = new Array(); //array of bullets on stage
+		var healthBars = new Array(); //array of health bars
 		
 		public function Main()
 		{
-				//intiialize function is called in the level's keyframe
+			//intiialize function is called in the level's keyframe
 		}
 
 		//INITIALIZE FUNCTION: starts the game
 		function init():void
 		{
-			
 			//add the event listeners
 			stage.addEventListener(Event.ENTER_FRAME,onEnterFrameHandler);
 			btnTower1.addEventListener(MouseEvent.MOUSE_UP, btnTowerHandler);
@@ -79,16 +81,12 @@
 			BuildMap();
 
 			//Spawn enemies for however many there are in the level
-			
-			
 			for (var i:int = 0; i < numberEnemies; i++)
 			{
 				//send the coordiantes of starting position to the function
 				//the y coordinate that is sent spawns each enemy slightly furthre back
 				SpawnEnemy(enemyStartX, enemyStartY * i- 1000); 
 			}
-		
-			
 		}
 
 		//function that uses the preset tiles in the array to actually create the map
@@ -103,20 +101,17 @@
 					tmpTile.y = i * 50;
 
 					addChild(tmpTile);//add the tile to the stage  //REMOVE THIS LATER AS IT INTERFERES WITH THE ACTUAL BACKGROUND
-					tmpTile.gotoAndStop(level[i][j]+1);
-					//set the frame of the tile according to the value in the 2D array;
+					tmpTile.gotoAndStop(level[i][j]+1); //set the frame of the tile according to the value in the 2D array;
 					// + 1 is because the frames values start as 1 whereas array values start at 0
 					
 					//add nonplaceable tiles to an array (all non placeable tiles lie on the path where the monsters walk, this path is set as 1 in the 2D level array)
 					if(level[i][j] == 1)
 					{
 						nonPlaceableTiles.push(tmpTile); //add to array of nonPlaceableTiles
-						
 					}
 					tmpTile.addEventListener(MouseEvent.ROLL_OVER, turnOnTile); // create event listeners for these tiles
 					tmpTile.addEventListener(MouseEvent.ROLL_OUT, turnOffTile);
 				}
-				
 			}
 		}
 
@@ -125,13 +120,20 @@
 		{
 			var tmpEnemy:Enemy = new Enemy();
 			tmpEnemy.x = xpos;//set coordiantes of enemy spawn
-			tmpEnemy.y = ypos;
+			tmpEnemy.y = ypos + 30;
 			addChild(tmpEnemy);//add enemy to stage
 			enemies.push(tmpEnemy); //add newly created enemy to array of enemies;
+			
+			var tmpHealthBar:healthBar = new healthBar();
+			tmpHealthBar.x = xpos- 15;
+			tmpHealthBar.y = ypos;
+			addChild(tmpHealthBar); //add health bar to stage
+			healthBars.push(tmpHealthBar); 
+		
 		}
 		
 		//function that moves ONE enemy
-		function moveEnemy(tmpEnemy:Enemy,i:int):void
+		function moveEnemy(tmpEnemy:Enemy,i:int, tmpHealthBar:healthBar):void
 		{
 			var dist_x:Number = wayPointsX[tmpEnemy.nextWayPoint] - tmpEnemy.x;//distance between the monster
 			var dist_y:Number = wayPointsY[tmpEnemy.nextWayPoint] - tmpEnemy.y;//and the nextWayPoint
@@ -141,39 +143,81 @@
 				tmpEnemy.nextWayPoint += 1;
 			}
 			var angle:Number = Math.atan2(dist_y,dist_x);//compute the angle of the monster
-			tmpEnemy.x +=  moveSpeed * Math.cos(angle);//update the x position
-			tmpEnemy.y +=  moveSpeed * Math.sin(angle);//update the y position
+			tmpEnemy.x +=  moveSpeed * Math.cos(angle);//update the x position of enemy
+			tmpEnemy.y +=  moveSpeed * Math.sin(angle);//update the y position of enemy
+			
+			tmpHealthBar.x +=  moveSpeed * Math.cos(angle);//update the x position of hp bar
+			tmpHealthBar.y +=  moveSpeed * Math.sin(angle);//update the y position of hp bar
+			
+			
+	
+			tmpEnemy.percentHP = tmpEnemy.hp / tmpEnemy.maxHP;
+			
+			tmpHealthBar.scaleX = tmpEnemy.percentHP; //-------------------------------------------FIX THis
+			
 			tmpEnemy.rotation = angle / Math.PI * 180;//rotate the monster
 			
 			//remove the enemy if it touches the last wayPoint
-			if (tmpEnemy.x >= 850)
+			if (tmpEnemy.x > 800)
 			{
-				removeChild(tmpEnemy);
 				enemies.splice(i,1);
+				removeChild(tmpEnemy);
 			}
-			
 			//remove the enemy if its hp becomes 0
 			if (tmpEnemy.hp <= 0)
 			{
 				currentGold +=  tmpEnemy.gold; //add to current gold for howmuch the enemy is worth
 				removeChild(tmpEnemy); //remove the enemy from the stage
 				enemies.splice(i,1); //remove the enemy from the array
+				
+				removeChild(tmpHealthBar);
+				healthBars.splice(i,1);
+			
 			}
 		}
+		
 
 		//ON ENTER FRAME (refreshes each frame
 		function onEnterFrameHandler(event:Event)
 		{
+			if (enemies.length <= 1)
+			{
+				//gotoAndStop(3);
+				//stage.removeEventListener(Event.ENTER_FRAME, onEnterFrameHandler);
+			}
 			//move each enemy every frame 
 			for (var i:int =0; i< enemies.length; ++i)
 			{
-				moveEnemy(enemies[i],i);
+				moveEnemy(enemies[i],i, healthBars[i]);
 			}
 			
+			//go through each tower and update it (create a bullet if tower is not reloading and enemy is in range
+			for (var i: int = 0; i < towers.length; ++i)
+			{
+				updateTowers(towers[i]);
+			}
+			
+			//go through each bullet
+			for (var i:int = 0; i < bullets.length; i++)
+			{
+				//if the bullet doesn't needs to be removed (see Bullet class), update it, if it does, remove it from the stage and the bullets array
+				if (!bullets[i].remove )
+				{
+					bullets[i].update();
+				}
+				else
+				{
+					removeChild(bullets[i]);
+					bullets.splice(i,1);
+				}
+			}
+			
+			//if a tower is being dragged, set its coordinates to that of the mouse
 			if(currTower != null)
 			{
-				currTower.x = mouseX;
-				currTower.y = mouseY;
+				//offset the coordinates so that the tower object doesn't get in the way of the tile
+				currTower.x = mouseX + 1 + currTower.width/2;
+				currTower.y = mouseY + 1 + currTower.height/2;
 			}
 		}
 		
@@ -183,13 +227,11 @@
 
 			//stores the current target of the mouse in a variable called currTile
 			currTile = event.currentTarget as Tile1;
-			//if the targeted tile is placeable (see canPlace function), and it exists on the stage, change the tile to grey ---------------------------~
+			//if the targeted tile is placeable (see canPlace function), and it exists on the stage, change the tile to grey
 			if (canPlace(currTile) == true  && currTile != null)
 				{
 					currTile.gotoAndStop(3);	
 				}
-				
-			
 		}
 		
 		//function that is caleld when mouse rolls off a tile
@@ -215,7 +257,6 @@
 					 }
 				 }
 			return true;
-			
 		}
 		
 		//this function is called when the tower button is pressed
@@ -228,28 +269,63 @@
 				currTower = new Tower();
 				addChild(currTower); //add current tower to stage
 			}
-			
 		}
 		
 		//this function is called when the mouse is clicked on the stage
 		function onMouseDownHandler(event:MouseEvent)
-		{
-			trace(canPlace(currTile));
-			trace(currTile);
-				  
-				  
-			if (currTile != null)
+		{  
+			
+			if (currTile != null && canPlace(currTile) && currGold - currTower.cost >= 0 && mouseX < 850)
 			{
-				if (canPlace(currTile))
-				{
-					currTower = null;
 				nonPlaceableTiles.push(currTile);
 				currTower.x = currTile.x + currTile.width /2;
 				currTower.y = currTile.y + currTile.width /2;
 				towers.push(currTower); 
+				
+				currTower = null;
+			}
+		}
+		
+		//calculates the distance between 2 movieclips using the distance formula
+		function calcDistance(A:MovieClip, B:MovieClip) : int
+		{
+			return Math.sqrt(Math.pow(B.x-A.x, 2) + Math.pow(B.y-A.y, 2) );
+		}
+		
+		//function updates one tower, this is called for every tower in the towers array
+		function updateTowers(tmpTower:Tower):void
+		{
+			//for some reason if I build the counter into the loop it doesn't work 
+			var counter:int = enemies.length
+			
+			if (tmpTower.reloadTime == 0) //make sure the tower is not reloading
+			{				
+				for (var i:int = 0; i < enemies.length; ++i) 
+				{
+					if (counter > 0)
+					{
+						counter--;
+					}
+					if(calcDistance(tmpTower, enemies[counter]) < tmpTower.range) // if distance between enemy and tower is less than the tower range
+					{
+						var angle:Number = Math.atan2(enemies[counter].y - tmpTower.y, enemies[counter].x - tmpTower.x); //calculate the angle of the bullet
+						var tmpBullet:Bullet = new Bullet(angle, enemies[counter]); //create a variable for a temporary bullet
+						tmpBullet.x = tmpTower.x; //set its coordinates to that of the tower
+						tmpBullet.y = tmpTower.y;
+						addChild(tmpBullet); //add a bullet to the stage
+						bullets.push(tmpBullet); //add a bullet to the array of bullets
+						tmpTower.reloadTime = 3; // reset the reload time
+						tmpTower.rotation = angle / Math.PI * 180; //rotate the tower 
+						break; 
+					}	
 				}
 			}
-			
+			else
+			{
+				tmpTower.reloadTime --; //decrease reloadtime when enemies are not in range
+			}
 		}
 	}
 }
+
+

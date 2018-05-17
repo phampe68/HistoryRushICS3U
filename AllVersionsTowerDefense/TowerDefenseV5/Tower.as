@@ -5,9 +5,14 @@
 		var cost:int = 10; //point where enemy turns
 		var reloadTime:int = 1;
 		var range:int = 200;
+		var angle:Number;
 		
-		public function Tower(){
+		
+		
+		public function Tower()
+		{
 			
+
 		}
 	}
 	
