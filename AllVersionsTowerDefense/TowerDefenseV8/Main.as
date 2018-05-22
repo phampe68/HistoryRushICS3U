@@ -84,13 +84,6 @@
 			//Create the tile structure of the map
 			BuildMap();
 
-			/*Spawn enemies for however many there are in the level
-			for (var i:int = 0; i < numberEnemies; i++)
-			{
-				//send the coordiantes of starting position to the function
-				//the y coordinate that is sent spawns each enemy slightly furthre back
-				SpawnEnemy(enemyStartX, enemyStartY * i- 1000); 
-			}*/
 		}
 
 		//function that uses the preset tiles in the array to actually create the map
@@ -116,11 +109,12 @@
 					tmpTile.addEventListener(MouseEvent.ROLL_OVER, turnOnTile); // create event listeners for these tiles
 					tmpTile.addEventListener(MouseEvent.ROLL_OUT, turnOffTile);
 					
+					tmpTile.alpha = 0;
 					
 					
 				}
 			}
-
+			
 		}
 		//function that moves ONE enemy
 		function moveEnemy(tmpEnemy:Enemy,i:int, tmpHealthBar:healthBar):void

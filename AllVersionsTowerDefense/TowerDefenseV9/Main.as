@@ -9,27 +9,24 @@
 
 	public class Main extends MovieClip
 	{
-		//ENEMY 
+		//ENEMY things
 		var enemyDifficulty:int = 0;
 		var waveDifficulty:int = 0;
 		var enemiesCreated: int = 0;
 		var spawnTrig:Boolean = true;
 		var spawnTime:int = 10;//FIX?
-	
+		
 		//declare constants
 		const enemyStartX:int = 78;
 		const enemyStartY:int = 23;
 		
 		//declare variables
-		
 		var currentGold:int = 100;//how much gold you have
+		var isDragging:Boolean = false; //true when object is being dragged (not yet dropped)
 		var currTile: Tile1; //current tile
 		var currTower: Tower; //current tower
 		var currGold: int = 10000; //current gold
 		var numWave: int = 0 //which wave of enemies
-		
-		//declare boolean variables
-		var spawnStart:Boolean = true;
 
 		//declare arrays
 		var level:Array = new Array();//2D array for tiles on the map
@@ -50,11 +47,9 @@
 		function init():void
 		{
 			//add the event listeners
-		
+
 			btnTower1.addEventListener(MouseEvent.MOUSE_UP, btnTowerHandler);
-			btnWaveStart.addEventListener(MouseEvent.MOUSE_DOWN, btnWaveStartHandler);
-			
-			
+			btnWaveStart.addEventListener(MouseEvent.MOUSE_UP, btnWaveStartHandler);
 			stage.addEventListener(MouseEvent.MOUSE_DOWN, onMouseDownHandler); //listens for when mouse clicks stage
 			
 			//NOTE: The size of the level background has been changed to 850 by 600 to make room for shop
@@ -97,11 +92,12 @@
 			{//nested for loop to go through entire index of level array
 				for (var j:int =0; j < level[i].length; ++j)
 				{
-					var tmpTile:Tile1 = new Tile1();
+					var tmpTile:Tile1 = new Tile1(); //create a new variable for the tile
 					tmpTile.x = j * 50;//set the x and y coordinates of the tiles
 					tmpTile.y = i * 50;
 
-					addChild(tmpTile);//add the tile to the stage  //REMOVE THIS LATER AS IT INTERFERES WITH THE ACTUAL BACKGROUND
+					//NOTE: tiles will not be seen in the final product to allow drawings to be seen
+					addChild(tmpTile);//add the tile to the stage 
 					tmpTile.gotoAndStop(level[i][j]+1); //set the frame of the tile according to the value in the 2D array;
 					// + 1 is because the frames values start as 1 whereas array values start at 0
 					
@@ -113,9 +109,12 @@
 					tmpTile.addEventListener(MouseEvent.ROLL_OVER, turnOnTile); // create event listeners for these tiles
 					tmpTile.addEventListener(MouseEvent.ROLL_OUT, turnOffTile);
 					
-					tmpTile.alpha = 0;
+					tmpTile.alpha = 0; //make the tiles transparent so that the drawn background is visible
 				}
 			}
+			
+			
+			
 		}
 		//function that moves ONE enemy
 		function moveEnemy(tmpEnemy:Enemy,i:int, tmpHealthBar:healthBar):void
@@ -165,9 +164,10 @@
 				SpawnEnemy(enemyStartX, enemyStartY * i- 500); 
 			}
 
-			if (enemies.length <= 0)
+			if (enemies.length <= 1)
 			{
-				spawnStart = false;
+				//gotoAndStop(3);
+				//stage.removeEventListener(Event.ENTER_FRAME, onEnterFrameHandler);
 			}
 			//move each enemy every frame 
 			for (var i:int =0; i< enemies.length; ++i)
@@ -203,8 +203,6 @@
 				currTower.x = mouseX + 1 + currTower.width/2;
 				currTower.y = mouseY + 1 + currTower.height/2;
 			}
-			
-			
 		}
 		
 		//function that is called when mouse rolls over a tile
@@ -270,6 +268,16 @@
 			}
 		}
 		
+		function btnWaveStartHandler(event:MouseEvent)
+	    	{
+			numWave += 1; //add to the wave number
+			waveDifficulty += 20;
+
+			stage.addEventListener(Event.ENTER_FRAME,onEnterFrameHandler); //add onEnterFrame event listener
+			}
+		
+		
+
 		//calculates the distance between 2 movieclips using the distance formula
 		function calcDistance(A:MovieClip, B:MovieClip) : int
 		{
@@ -312,7 +320,6 @@
 				var enemyRNG:int = Math.floor(Math.random()*3 + 0);
 				var tmpEnemy:Enemy = new Enemy(enemyRNG); //create a new variable for the enemy belonging to the enemy class
 				
-				
 				enemyDifficulty += tmpEnemy.enemyType; //add to the total difficulty value of the enemies
 				
 				tmpEnemy.x = xpos;//set coordiantes of enemy spawn
@@ -334,31 +341,10 @@
 			}
 			
 			//stop spawning when enemy difficulty value is over 20 
-			if (enemyDifficulty >= 20)
+			if (enemyDifficulty >= 25 )
 			{
 				spawnTrig = false;
 			}
-		}
-		
-		function btnWaveStartHandler(event:Event)
-		{
-			//add event listener for frame refresh
-			
-			if (spawnStart == true)
-			{
-				stage.addEventListener(Event.ENTER_FRAME,onEnterFrameHandler);
-				numWave += 1; //add to wave number
-				lblWaveNum.text = String(numWave);
-				waveDifficulty += 20; //add to wave difficulty;
-			}
-			else
-			{
-				spawnStart = true; 
-			}
-			
-			
-		
-
 		}
 	}
 }
