@@ -6,6 +6,7 @@
 	import flash.events.Event;
 	import flash.utils.Timer;
 	import flash.events.TimerEvent;
+	import flash.ui.Mouse;
 
 	public class Main extends MovieClip
 	{
@@ -17,6 +18,7 @@
 		var currentGold:int = 100;//how much gold you have
 		var currTile: Tile1; //current tile
 		var currTower: Tower; //current tower
+		var selectedTower: Tower; 
 		var currGold: int = 10000; //current gold
 		var numWave: int = 0 //which wave of enemies
 		var enemyDifficulty:int = 0;
@@ -113,8 +115,6 @@
 		//ON ENTER FRAME (refreshes each frame)
 		function onEnterFrameHandler(event:Event)
 		{
-			
-			//------------------------
 			if (spawnTrig)
 			{
 				SpawnEnemy(enemyStartX, enemyStartY * i- 500); 
@@ -124,7 +124,6 @@
 			{
 				spawnStart = false;
 			}
-			//---------------------------
 			
 			//move each enemy every frame 
 			for (var i:int =0; i< enemies.length; ++i)
@@ -250,7 +249,6 @@
 				currTower = new Tower();
 				addChild(currTower); //add current tower to stage
 				currTower.addEventListener(MouseEvent.MOUSE_DOWN, towerSelectHandler);
-				
 			}
 		}
 		
@@ -258,14 +256,14 @@
 		{
 			//insert code that shows which tower is selected
 			trace("tower selected");
-			btnUpgrade.addEventListener(ComponentEvent.BUTTON_DOWN, btnUpgradeHandler);
 			btnUpgrade.visible = true;
-			
+			btnUpgrade.addEventListener(MouseEvent.MOUSE_DOWN, btnUpgradeHandler);
+			selectedTower = event.currentTarget as Tower;
 		}
-		
-		function btnUpgradeHandler(Event:ComponentEvent)
+
+		function btnUpgradeHandler(event:MouseEvent)
 		{
-			
+			selectedTower.gotoAndStop(2);
 		}
 		
 		//this function is called when the mouse is clicked on the stage
@@ -278,6 +276,10 @@
 				currTower.y = currTile.y + currTile.width /2;
 				towers.push(currTower); 
 				currTower = null;
+			}
+			else
+			{
+				
 			}
 		}
 		
@@ -366,7 +368,6 @@
 			else{
 				trace("CAN't START WAVE");
 			}
-
 		}
 	}
 }
