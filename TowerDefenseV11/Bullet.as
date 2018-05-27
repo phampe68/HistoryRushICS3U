@@ -11,8 +11,6 @@
 		var target:Enemy; //target takes a variable from the enemy class
 		var remove:Boolean //if true, remove the bullet 
 		
-		var explosionTimer = new Timer(25);
-		
 		public function Bullet(rotate:Number, tmpEnemy:Enemy)
 		{
 			angle = rotate; //set angle variable to the angle sent from main
@@ -28,19 +26,17 @@
 			//if the bullet hits the target, take away from the target's hp and set that the bullet needs to be removed
 			if (this.hitTestObject(target))
 			{
+				//explosionTimer.start();
+				trace("Enemy X" + target.x);
+				trace("Enemy Y" + target.y);
 				var tmpExplosion = new Explosion();
-				tmpExplosion.x = target.x;
-				tmpExplosion.y = target.y;
+				tmpExplosion.x = this.x;
+				tmpExplosion.y = this.y;
 				addChild(tmpExplosion);
+				trace("explo X" + tmpExplosion.x);
+				trace("explo Y" + tmpExplosion.y);
 				
-				explosionTimer.start();
-				
-				if (explosionTimer >= 50)
-				{
-					removeChild(tmpExplosion);
-				}
-				
-				
+				//----------------------------------------
 				target.hp -= this.damage;
 				remove = true;
 			}

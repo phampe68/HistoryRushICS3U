@@ -117,7 +117,7 @@
 		{
 			if (spawnTrig)
 			{
-				SpawnEnemy(enemyStartX, enemyStartY * i- 500); 
+				SpawnEnemy(enemyStartX, enemyStartY * i- 50); 
 			}
 
 			if (enemies.length <= 0)
@@ -295,10 +295,6 @@
 				towers.push(currTower); 
 				currTower = null;
 			}
-			
-			
-			
-			
 		}
 		
 		//calculates the distance between 2 movieclips using the distance formula
