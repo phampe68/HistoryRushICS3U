@@ -15,11 +15,12 @@
 		const enemyStartY:int = 23;
 		
 		//declare variables
-		var currentGold:int = 100;//how much gold you have
+		//var currentGold:int = 100;//how much gold you have
 		var currTile: Tile1; //current tile
 		var currTower: Tower; //current tower
-		var selectedTower: Tower; 
 		var currGold: int = 10000; //current gold
+		var selectedTower: Tower; 
+		
 		var numWave: int = 0 //which wave of enemies
 		var enemyDifficulty:int = 0;
 		var waveDifficulty:int = 0;
@@ -36,6 +37,11 @@
 		var wayPointsY:Array = new Array();//points on the path where the enemies turn
 		var nonPlaceableTiles = new Array(); //where towers cannot be placed
 		var towers = new Array(); //array of placed towers
+		
+		//TEST THIS: TOWER TYPE ARRAYS:
+		var towers1 = new Array(); //array of tower type 1s
+		var towers2 = new Array(); //array of tower type 2s
+		
 		var bullets = new Array(); //array of bullets on stage
 		var healthBars = new Array(); //array of health bars
 		
@@ -159,6 +165,9 @@
 				currTower.x = mouseX + 1 + currTower.width/2;
 				currTower.y = mouseY + 1 + currTower.height/2;
 			}
+			
+			//change label Gold label
+			txtGold.text = String("GOLD: " + currGold);
 		}
 		
 		//function that moves ONE enemy
@@ -189,11 +198,14 @@
 			{
 				enemies.splice(i,1);
 				removeChild(tmpEnemy);
+				healthBars.splice(i,1);
+				removeChild(tmpHealthBar);
+				
 			}
 			//remove the enemy if its hp becomes 0
 			if (tmpEnemy.hp <= 0)
 			{
-				currentGold +=  tmpEnemy.gold; //add to current gold for howmuch the enemy is worth
+				currGold +=  tmpEnemy.gold; //add to current gold for howmuch the enemy is worth
 				removeChild(tmpEnemy); //remove the enemy from the stage
 				enemies.splice(i,1); //remove the enemy from the array
 				removeChild(tmpHealthBar);
@@ -254,12 +266,8 @@
 		
 		function towerSelectHandler(event:MouseEvent)
 		{
-			
-			trace("tower selected");
-			
 			btnUpgrade.visible = true; //allow user to upgrade the tower	
 			btnUpgrade.addEventListener(MouseEvent.MOUSE_DOWN, btnUpgradeHandler); //add the event listener for the upgrade button
-			
 			
 			// if a selected tower does not exist, select it. If it does, and they click on the tower again, unselect the tower
 			if (selectedTower == null)
@@ -273,14 +281,19 @@
 				btnUpgrade.visible = false; //make sure user cannot use the ugprade button
 				btnUpgrade.removeEventListener(MouseEvent.MOUSE_DOWN, btnUpgradeHandler); //add the event listener for the upgrade button
 			}
-
-			
-		
 		}
-
+		
 		function btnUpgradeHandler(event:MouseEvent)
 		{
-			selectedTower.gotoAndStop(2);
+			if (selectedTower.towerType < 1 && currGold >= 50)
+			{
+				selectedTower.towerType += 1; //change tower type 
+				selectedTower.gotoAndStop(selectedTower.towerType + 1); //set the frame of the tower
+				currGold -= 50; //subtract from gold
+				selectedTower.range += 100; //add to tower range
+			}
+			
+
 		}
 		
 		//this function is called when the mouse is clicked on the stage
@@ -303,6 +316,7 @@
 			return Math.sqrt(Math.pow(B.x-A.x, 2) + Math.pow(B.y-A.y, 2) );
 		}
 		
+		//THIS IS WHERE I NEED TO DO THE TOWER TYPE ----------
 		//function updates one tower, this is called for every tower in the towers array
 		function updateTowers(tmpTower:Tower):void
 		{
@@ -313,12 +327,12 @@
 					if(calcDistance(tmpTower, enemies[i]) < tmpTower.range) // if distance between enemy and tower is less than the tower range
 					{
 						var angle:Number = Math.atan2(enemies[i].y - tmpTower.y, enemies[i].x - tmpTower.x); //calculate the angle of the bullet
-						var tmpBullet:Bullet = new Bullet(angle, enemies[i]); //create a variable for a temporary bullet
+						var tmpBullet:Bullet = new Bullet(angle, enemies[i], tmpTower); //create a variable for a temporary bullet
 						tmpBullet.x = tmpTower.x; //set its coordinates to that of the tower
 						tmpBullet.y = tmpTower.y;
 						addChild(tmpBullet); //add a bullet to the stage
 						bullets.push(tmpBullet); //add a bullet to the array of bullets
-						tmpTower.reloadTime = 3; // reset the reload time
+						tmpTower.reloadTime = 10; // reset the reload time
 						tmpTower.rotation = angle / Math.PI * 180; //rotate the tower 
 						break; 
 					}	
@@ -380,8 +394,9 @@
 				waveDifficulty += 20; //add to wave difficulty;
 			}
 			else{
-				trace("CAN't START WAVE");
+				trace("CAN'T START WAVE");
 			}
 		}
 	}
 }
+
